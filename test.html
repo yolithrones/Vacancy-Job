@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Insights - Job Search</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0a66c2;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f3f2ef;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .header {
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .search-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-container input,
+        .search-container select {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background-color: #084594;
+        }
+
+        .job-listings {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .job-listing {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .job-listing:last-child {
+            border-bottom: none;
+        }
+
+        .job-logo {
+            width: 60px;
+            height: 60px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .job-details {
+            flex-grow: 1;
+        }
+
+        .job-title {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .job-company {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .job-meta {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .job-meta i {
+            margin-right: 5px;
+        }
+
+        .job-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-apply {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-save {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        #loading-spinner {
+            text-align: center;
+            padding: 20px;
+            color: var(--primary-color);
+        }
+
+        .related-jobs {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+            }
+            .job-listing {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .job-actions {
+                width: 100%;
+                flex-direction: row;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container navbar">
+            <div class="logo">Career Insights</div>
+            <nav>
+                <a href="#" class="btn-apply">Post a Job</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="search-section">
+            <form id="search-form">
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="Job title, keywords, or company" 
+                        required
+                    >
+                    <select id="location-filter">
+                        <option value="">All Locations</option>
+                        <option value="London">London</option>
+                        <option value="Manchester">Manchester</option>
+                        <option value="Birmingham">Birmingham</option>
+                        <option value="Edinburgh">Edinburgh</option>
+                        <option value="Remote">Remote</option>
+                    </select>
+                    <button type="submit" class="search-btn">Search Jobs</button>
+                </div>
+            </form>
+        </section>
+
+        <div id="loading-spinner" style="display:none;">
+            <i class="fas fa-spinner fa-spin"></i> Loading job vacancies...
+        </div>
+
+        <section id="results-container">
+            <div class="job-listings" id="main-job-listings">
+                <h2 class="section-title">Latest Job Vacancies</h2>
+                <!-- Job listings will be dynamically inserted here -->
+            </div>
+
+            <div class="related-jobs" id="related-jobs">
+                <h3>Related Job Recommendations</h3>
+                <!-- Related job recommendations will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Enhanced escaping function
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"'/]/g, function(match) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '/': '&#x2F;'
+                }[match];
+            });
+        }
+
+        async function searchJob(event) {
+            event.preventDefault();
+            const searchInput = document.getElementById('search-input').value.trim(); 
+            const locationFilter = document.getElementById('location-filter').value;
+            const resultsContainer = document.getElementById('main-job-listings');
+            const relatedJobsContainer = document.getElementById('related-jobs');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            
+            if (!searchInput) {
+                alert('Please enter a job title, company, or keyword');
+                return;
+            }
+
+            loadingSpinner.style.display = 'block';
+            resultsContainer.innerHTML = ''; 
+            relatedJobsContainer.innerHTML = '';
+            
+            try {
+                const [vacancyResponse, socResponse] = await Promise.all([
+                    fetch(`https://api.lmiforall.org.uk/api/v1/vacancies/search?keywords=${encodeURIComponent(searchInput)}`),
+                    fetch(`https://api.lmiforall.org.uk/api/v1/soc/search?q=${encodeURIComponent(searchInput)}`)
+                ]);
+
+                if (!vacancyResponse.ok || !socResponse.ok) {
+                    throw new Error('Failed to fetch job data');
+                }
+
+                const jobs = await vacancyResponse.json();
+                const socData = await socResponse.json();
+
+                displayResults(jobs, socData, locationFilter);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                resultsContainer.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        Failed to fetch jobs. Please try again later. 
+                        ${error.message}
+                    </div>
+                `;
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function displayResults(jobs, socData, locationFilter) {
+            const resultsContainer = document.getElementById('main-job-listings');
+            const relatedJobsContainer = document.getElementById('related-jobs');
+            const sectionTitle = resultsContainer.querySelector('.section-title');
+            
+            // Filter jobs by location if selected
+            const filteredJobs = locationFilter 
+                ? jobs.filter(job => 
+                    job.location?.location.toLowerCase().includes(locationFilter.toLowerCase())
+                ) 
+                : jobs;
+
+            const limitedJobs = filteredJobs.slice(0, 10);
+            
+            sectionTitle.textContent = `${limitedJobs.length} Jobs Found`;
+
+            let jobListingsHTML = '';
+            
+            limitedJobs.forEach(job => {
+                const relatedSoc = socData.find(soc => 
+                    job.title.toLowerCase().includes(soc.title.toLowerCase())
+                );
+
+                jobListingsHTML += `
+                    <div class="job-listing">
+                        <div class="job-logo">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="job-details">
+                            <h3 class="job-title">${escapeHTML(job.title)}</h3>
+                            <div class="job-company">${escapeHTML(job.company || 'Company not specified')}</div>
+                            <div class="job-meta">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${escapeHTML(job.location?.location || 'Location not specified')}
+                                <span style="margin: 0 10px;">•</span>
+                                <i class="fas fa-clock"></i>
+                                Full-time
+                            </div>
+                        </div>
+                        <div class="job-actions">
+                            <a href="${escapeHTML(job.link)}" target="_blank" class="btn-apply">
+                                Apply Now
+                            </a>
+                            <a href="#" class="btn-save">
+                                <i class="far fa-bookmark"></i> Save
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML += jobListingsHTML;
+
+            // Related Jobs Section
+            if (socData && socData.length > 0) {
+                let relatedJobsHTML = '<div class="job-listings">';
+                
+                socData.slice(0, 3).forEach(soc => {
+                    relatedJobsHTML += `
+                        <div class="job-listing">
+                            <div class="job-details">
+                                <h4 class="job-title">${escapeHTML(soc.title)}</h4>
+                                <p class="job-meta">${escapeHTML(soc.description || '')}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                relatedJobsHTML += '</div>';
+                relatedJobsContainer.innerHTML = relatedJobsHTML;
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('search-form').addEventListener('submit', searchJob);
+
+        // Default job loading on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaultSearchInput = document.getElementById('search-input');
+            if (defaultSearchInput) {
+                defaultSearchInput.value = 'software developer';
+                searchJob(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>
