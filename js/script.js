@@ -67,125 +67,118 @@ document.getElementById('calculatorForm').addEventListener('submit', function(e)
 });
 
 // Save this as script.js
-// Enhanced Vacancy Search JavaScript
 async function searchJob() {
-    event.preventDefault();
-    const searchInput = document.getElementById('search-input').value.trim();
-    const locationFilter = document.getElementById('location-filter').value;
-    const resultsContainer = document.getElementById('results-container');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    
-    if (!searchInput) {
+  event.preventDefault();
+  const searchInput = document.getElementById('search-input').value.trim(); 
+  const resultsContainer = document.getElementById('results-container');
+  const loadingSpinner = document.getElementById('loading-spinner');
+  
+  if (!searchInput) {
       alert('Please enter a job title, company, or keyword');
       return;
-    }
+  }
+
+  loadingSpinner.style.display = 'block';
   
-    loadingSpinner.style.display = 'block';
-    
-    try {
-      // First API - Vacancies
-      const vacancyResponse = await fetch(
-        `https://api.lmiforall.org.uk/api/v1/vacancies/search?keywords=${encodeURIComponent(searchInput)}` +
-        (locationFilter ? `&location=${encodeURIComponent(locationFilter)}` : '')
-      );
-      
-      // Second API - Job Information
-      const socResponse = await fetch(
-        `https://api.lmiforall.org.uk/api/v1/soc/search?q=${encodeURIComponent(searchInput)}`
-      );
-  
+  try {
+      const [vacancyResponse, socResponse] = await Promise.all([
+          fetch(`https://api.lmiforall.org.uk/api/v1/vacancies/search?keywords=${encodeURIComponent(searchInput)}`),
+          fetch(`https://api.lmiforall.org.uk/api/v1/soc/search?q=${encodeURIComponent(searchInput)}`)
+      ]);
+
       const jobs = await vacancyResponse.json();
       const socData = await socResponse.json();
-  
-      displayResults(jobs.slice(0, 10), socData);
-    } catch (error) {
+
+      displayResults(jobs, socData);
+  } catch (error) {
       console.error('Error fetching data:', error);
       resultsContainer.innerHTML = `
-        <div class="alert alert-danger">
-          Failed to fetch jobs. Please try again.
-        </div>
+          <div class="alert alert-danger" role="alert">
+              Failed to fetch jobs. Please try again.
+          </div>
       `;
-    } finally {
+  } finally {
       loadingSpinner.style.display = 'none';
-    }
   }
+}
+
+function displayResults(jobs, socData) {
+  const resultsContainer = document.getElementById('results-container');
+
+  // Update the section title
+  const sectionTitle = document.querySelector('.section-title');
+  sectionTitle.textContent = `${jobs.length} Jobs Found`;
+
+  // Create the job listings HTML
+  let jobListingsHTML = `<ul class="job-listings mb-5">`;
   
-  function displayResults(jobs, socData) {
-    const resultsContainer = document.getElementById('results-container');
-    const sectionTitle = document.querySelector('.section-title');
-    sectionTitle.textContent = `${jobs.length} Jobs Found`;
-  
-    // Job Listings HTML
-    let jobListingsHTML = `<div class="job-listings">`;
-    
-    jobs.forEach((job, index) => {
-      // Find corresponding SOC data
-      const relatedSocData = socData.find(soc => 
-        job.title.toLowerCase().includes(soc.title.toLowerCase())
-      );
-  
+  jobs.forEach(job => {
       jobListingsHTML += `
-        <div class="job-listing" data-job-index="${index}">
-          <div class="job-title-section">
-            <h3 class="job-title">${escapeHTML(job.title)}</h3>
-            <button class="toggle-details-btn">▼ Show Details</button>
-          </div>
-          
-          <div class="job-details" style="display:none;">
-            <div class="job-basic-info">
-              <p><strong>Company:</strong> ${escapeHTML(job.company || 'Not specified')}</p>
-              <p><strong>Location:</strong> ${escapeHTML(job.location?.location || 'Not specified')}</p>
-              <a href="${escapeHTML(job.link)}" target="_blank" class="view-job-btn">View Full Job</a>
-            </div>
-            
-            ${relatedSocData ? `
-              <div class="job-extended-info">
-                <h4>Job Description</h4>
-                <p>${escapeHTML(relatedSocData.description || 'No description available')}</p>
-                
-                <h4>Typical Tasks</h4>
-                <ul>
-                  ${relatedSocData.tasks 
-                    ? relatedSocData.tasks.map(task => `<li>${escapeHTML(task)}</li>`).join('') 
-                    : '<li>No specific tasks listed</li>'}
-                </ul>
+          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+              <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+                  <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
+                      <h2>
+                          <a href="${escapeHTML(job.link)}" target="_blank" class="job-title-link">
+                            
+                          </a>
+                      </h2>
+                      <strong>${escapeHTML(job.company || 'Company not specified')}</strong>
+                  </div>
+                  <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
+                      <span class="icon-room"></span> 
+                      ${escapeHTML(job.location?.location || 'Location not specified')}
+                  </div>
+                  <div class="job-listing-meta custom-width w-25 text-right">
+                      <a href="${escapeHTML(job.link)}" target="_blank" class="btn btn-primary btn-sm">
+                          View Details
+                      </a>
+                  </div>
               </div>
-            ` : ''}
-          </div>
-        </div>
+          </li>
       `;
-    });
+  });
   
-    jobListingsHTML += `</div>`;
-  
-    resultsContainer.innerHTML = jobListingsHTML;
-  
-    // Add event listeners for job detail toggles
-    document.querySelectorAll('.toggle-details-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const jobDetails = this.closest('.job-listing').querySelector('.job-details');
-        const isHidden = jobDetails.style.display === 'none';
-        
-        jobDetails.style.display = isHidden ? 'block' : 'none';
-        this.textContent = isHidden ? '▲ Hide Details' : '▼ Show Details';
-      });
-    });
+  jobListingsHTML += `</ul>`;
+
+  // Add SOC data if available
+  let socHTML = '';
+  if (socData && socData.length > 0) {
+      socHTML = `
+          <div class="mb-5">
+              <h3>Related Occupations:</h3>
+              <ul class="list-unstyled">
+                  ${socData.slice(0, 3).map(soc => `
+                      <li class="mb-2">
+                          <strong>${escapeHTML(soc.title)}</strong>
+                          <p class="text-muted">${escapeHTML(soc.description || '')}</p>
+                      </li>
+                  `).join('')}
+              </ul>
+          </div>
+      `;
   }
-  
-  // HTML Updates Needed
-  /*
-  <div id="search-container">
-    <form id="search-form">
-      <input type="text" id="search-input" placeholder="Job title or keyword">
-      
-      <select id="location-filter">
-        <option value="">All Locations</option>
-        <option value="London">London</option>
-        <option value="Manchester">Manchester</option>
-        <!-- Add more locations -->
-      </select>
-      
-      <button type="submit">Search Jobs</button>
-    </form>
-  </div>
-  */
+
+  // Display results
+  resultsContainer.innerHTML = socHTML + jobListingsHTML;
+}
+
+// Helper function to prevent XSS
+function escapeHTML(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Add event listener for the search form
+document.getElementById('search-form').addEventListener('submit', searchJob);
+
+// Add this CSS to your stylesheet
+const styles = `
+
+`;
+
+// Add styles to the document
+const styleSheet = document.createElement("style");
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
